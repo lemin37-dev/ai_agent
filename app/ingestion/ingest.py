@@ -19,7 +19,7 @@ def ingest_file(path:Path):
     # 1. 문서 내에서 메타데이터와 본문 분리 -> '---' 기준 분할
     meta, body = load_markdown(path)
     # 2. body(본문) 관련 RAG에서 검색 가능한 작은 단위로 chunk 처리
-    chunks = split_text(body)
+    chunks = split_text(body, 300)
     # 3. 임베딩 처리
     vectors = get_embeddings().embed_documents(chunks)
     # 4. 메타데이터, 벡터를 데이터베이스에 입력 -> 하나의 트랜잭션으로 관리
