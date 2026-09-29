@@ -19,6 +19,12 @@ L sql
     L 002_documents.sql
 L steps
   L step8_document_ingestion.py
+L app
+  L ingestion
+    L __init__.py
+    L ingest.py
+    L loader.py
+    L splitter.py
 ```
 
 # 데이터를 벡터화 디비 입력 절차
@@ -26,4 +32,9 @@ L steps
 - 테이블 생성
 ```
 python -m scripts.migrate
+```
+
+# 실행
+```
+python -m steps.step8_document_ingestion
 ```
