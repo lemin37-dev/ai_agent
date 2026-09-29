@@ -8,6 +8,10 @@
 ```
 /
 L docker-compose.yml
+L app
+    L database.py       : PostgreSQL 접속 커넥션 구성
+L steps
+    L step7_pgvector.py : 간단한 텍스트(문장)을 테이블 upsert(insert or update)처리
 ```
 
 # 디비 구성
@@ -32,13 +36,13 @@ L sql
 # 테이블 구성 및 초기 작업
 ```
 python -m scripts.migrate
----
+```
 applied: 001_pgvector.sql
 
 
 # 확인
 docker exec -it agent-postgres psql -U agent -d agentlab
----
+```
 psql (16.15 (Debian 16.15-1.pgdg12+2))
 Type "help" for help.
 
@@ -59,4 +63,30 @@ agentlab=# select * from demo_vectors;
  id | content | embedding 
 ----+---------+-----------
 (0 rows)
+```
+
+# 실행
+```
+python -m steps.step7_pgvector
+```
+
+# 데이터 확인
+```
+# pg 접속
+docker exec -it agent-postgres psql -U agent -d agentlab
+
+# 쿼리 수행
+agentlab=# select id, content from demo_vectors;
+ id |    content     
+----+----------------
+  1 | 환불 정책
+  2 | 연차 휴가 규정
+  3 | 월 매출 분석
+(3 rows)
+
+# vector 확인
+select
+    id, content,
+    left(embedding::text, 14) || '...' as embedding
+from demo_vectors;
 ```
