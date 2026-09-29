@@ -18,6 +18,8 @@ def load_markdown(path:Path):
   if not text.startswith("---"):
     # 메타데이터가 없는 규정집 문서
     return {}, text
-
-
-  pass
+  # 3. 최대 2회만 분할
+  _, meta, body = text.split('---', 2)
+  # 4. 반환 (dict, text)
+  # yaml.safe_load() -> 키:값 -> 파싱하여 dict 변환
+  return yaml.safe_load(meta) or {}, body.strip()
