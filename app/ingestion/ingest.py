@@ -5,7 +5,7 @@
 
 from pathlib import Path
 from .loader import load_markdown
-from .splitter import split_text
+from .splitter import split_text, semantic_split_text
 from app.embedding import get_embeddings
 from app.database import connect
 from pgvector import Vector
@@ -14,12 +14,28 @@ from psycopg.types.json import Jsonb
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data"
 
+# 청킹처리 통합 함수
+def make_chunks(body:str, *, strategy:str="paragraph", semantic_threshold:float=0.60) -> list[str]:
+   '''
+   strategy
+   - paragraph : 고정크기
+   - semantic : 의미단위
+   '''
+   if strategy == "paragraph":
+      return split_text(body)
+   elif strategy == "semantic":
+      return semantic_split_text(body, semantic_threshold)
+
+   # 예외처리
+   raise ValueError(f"알 수 없는 방식 {strategy}")
+
 # md 파일별 처리 
-def ingest_file(path:Path):
+def ingest_file(path:Path, strategy:str, semantic_threshold:float):
     # 1. 문서 내에서 메타데이터와 본문 분리 -> '---' 기준 분할
     meta, body = load_markdown(path)
     # 2. body(본문) 관련 RAG에서 검색 가능한 작은 단위로 chunk 처리
-    chunks = split_text(body, 300)
+    #    semantic 방식 추가
+    chunks = make_chunks(body, strategy=strategy, semantic_threshold=semantic_threshold)
     # 3. 임베딩 처리
     vectors = get_embeddings().embed_documents(chunks)
     # 4. 메타데이터, 벡터를 데이터베이스에 입력 -> 하나의 트랜잭션으로 관리
@@ -67,7 +83,7 @@ def ingest_file(path:Path):
 def main():
   # 파일별 처리 구성
   for path in sorted(DATA.rglob("*.md")):
-    ingest_file(path)
+    ingest_file(path, "semantic", 0.55)
   pass
 
 if __name__ == "__main__":
