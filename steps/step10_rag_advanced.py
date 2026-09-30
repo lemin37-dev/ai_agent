@@ -22,7 +22,7 @@ DEMO_TEXT = """
 """
 
 # 1. 고정 크기 청킹(문단 기준 청킹)
-paragraph_chunks = split_text(DEMO_TEXT, max_chars=300)
+# paragraph_chunks = split_text(DEMO_TEXT, max_chars=300)
 # for i, chunk in enumerate(paragraph_chunks, 1):
 #   print(f'[{i}] {chunk}')
 
@@ -41,10 +41,11 @@ paragraph_chunks = split_text(DEMO_TEXT, max_chars=300)
 '''
 
 # 2. 시멘틱 청킹
-semantic_chunks = semantic_split_text(DEMO_TEXT, threshold=0.55, max_chars=400)
-for i, chunk in enumerate(semantic_chunks, 1):
-  print(f'[{i}] {chunk}')
+# semantic_chunks = semantic_split_text(DEMO_TEXT, threshold=0.55, max_chars=400)
+# for i, chunk in enumerate(semantic_chunks, 1):
+#   print(f'[{i}] {chunk}')
 
+# 결과
 '''
 [1] 상품을 수령한 뒤 단순 변심으로 반품하려는 고객은 수령일로부터 7일 이내에 신청해야 합니다.
 반품 상품은 사용 흔적이 없어야 하며 포장 상태가 보존되어야 합니다.
@@ -55,3 +56,19 @@ for i, chunk in enumerate(semantic_chunks, 1):
 [3] 월 매출 분석에서는 주문 금액, 판매 수량, 환불 금액을 함께 확인합니다.
 전월 대비 증감률과 상품별 매출 비중을 계산하면 주요 매출 변화 원인을 찾을 수 있습니다.
 '''
+
+from app.retrieval import advanced_search
+# 3. 검색
+query = "상품 하자 환불 기간과 배송비 부담 주체"
+# 3-1. 전체 검색
+# for row in advanced_search(query, k=5):
+#   print(f'{row[0]} | {row[1]} | {row[2]} | {row[-3][:30]} | {row[-2]} | {row[-1]}')
+
+# 3-2. 필터 활용 검색
+# 필터링을 정확하게 부여할 경우 데이터가 많은 상황에서 더욱 빠른 응답 결과를 보임
+# 필터값을 부적절하게 지정한다면 역효과가 날 수 있음
+for row in advanced_search(query, department="CS", k=5):
+  print(f'{row[0]} | {row[1]} | {row[2]} | {row[-3][:30]} | {row[-2]} | {row[-1]}')
+
+# 이후 시나리오
+# 검색결과를 근거로 프롬프트에 넣어서 추론 -> app.rag.answer() 참고
