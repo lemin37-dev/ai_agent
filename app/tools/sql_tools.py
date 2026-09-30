@@ -29,7 +29,7 @@ def sales_summary(start_date:str, end_date:str) -> str:
     cur.execute(sql, params)
     revenue, count = cur.fetchone()
 
-  return f"revenue={revenue}, orders={count}, range{start_date}~{end_date}"
+  return f"revenue={revenue}, orders={count}, range={start_date}~{end_date}"
 
 
 @tool
@@ -42,7 +42,7 @@ def top_products(start_date:str, end_date:str, limit:int=3) -> str:
     sql = '''
       select
         p.product_name,
-        sum(o.qty),
+        sum(o.quantity),
         sum(o.amount)
       from
         orders o
@@ -56,7 +56,7 @@ def top_products(start_date:str, end_date:str, limit:int=3) -> str:
       order by sum(o.amount) desc
       limit %s
     '''
-    params = (start_date, end_date, max(1, min(limit, 10))
+    params = (start_date, end_date, max(1, min(limit, 10)))
     cur.execute(sql, params)
     rows = cur.fetchall()
 
