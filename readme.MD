@@ -9,7 +9,7 @@
 # 기본 가상환경 구성
 ```
 # 가상환경 구성
-python -m venv agent
+python -m venv .agent
 
 # 활성화
 # 윈도우
