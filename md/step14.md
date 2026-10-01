@@ -36,3 +36,12 @@ python -m scripts.migrate
 # 테이블 구조 확인
 \d agent_memories
 ```
+
+# 실행
+```
+python -m steps.step14_memory
+----
+id | user_id  |                       content                        
+----+----------+------------------------------------------------------
+  1 | de-ai-19 | 답변 형식 선호: 짧은 bullet 형태로 답변받기를 선호함
+```
