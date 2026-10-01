@@ -61,3 +61,29 @@ def top_products(start_date:str, end_date:str, limit:int=3) -> str:
     rows = cur.fetchall()
 
   return "\n".join(f"{i+1}. {name}:qty={qty}, revenue={revenue}" for i, (name, qty, revenue) in enumerate(rows))
+
+@tool
+def refund_summary(start_date:str, end_date:str) -> str:
+  '''
+  특정 날짜범위(YYYY-MM-DD) 내에서 환불 통계를 집계한다.
+  '''
+  with connect() as conn, conn.cursor() as cur:
+    # 결재 완료된 건만 대상으로 시작일 ~ 종료일 범위 내 집계
+    sql = '''
+      select
+        count(*),
+        COALESCE(sum(amount), 0),
+        string_agg(DISTINCT reason, ',')
+      from
+        refunds
+      where
+        status = 'approved'
+        and requested_at >= %s::date
+        and requested_at < (%s::date + INTERVAL '1 day')
+      ;
+    '''
+    params = (start_date, end_date)
+    cur.execute(sql, params)
+    count, amount, resones = cur.fetchone()
+
+  return f"refund_count={count}, refund_amount={amount}, range={start_date}~{end_date}, reason={resones}"

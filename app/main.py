@@ -17,8 +17,12 @@ async def run(query:str):
     config = {"recursion_limit": 18}
   )
 
-  # 전체 맥락(상태 변화 기록)
-  print(result["messages"])
+  # 툴 중심 상태 관리값 추출
+  for message in result["messages"]:
+    if getattr(message, "tool_calls", None):  # 툴 이름
+      print("TOOL CALLS : ", [x.get('name') for x in message.tool_calls])
+    if getattr(message, "type", ""):  # 툴 결과
+      print("TOOL RESULT : ", message.content)
 
   # 최종 답변
   print("+"*30)
