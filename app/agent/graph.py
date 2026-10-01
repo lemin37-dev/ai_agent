@@ -12,9 +12,10 @@ from app.agent.state import AgentState # LangGraph 상에서 상태 관리용
 from app.agent.prompts import SYSTEM_PROMPT # 미리 작성해둔 System Prompt 활용
 from app.tools.sql_tools import sales_summary, top_products, refund_summary # SQL Tool
 from app.tools.rag_tools import search_company_policy # LAG Tool
+from app.tools.memory_tools import remember_user_prefrence, recall_user_memory # Memroy Tool
 
 # 툴 목록 구성
-TOOLS = [sales_summary, top_products, refund_summary, search_company_policy]
+TOOLS = [sales_summary, top_products, refund_summary, search_company_policy, remember_user_prefrence, recall_user_memory]
 
 # 그래프 빌드
 def build_graph():

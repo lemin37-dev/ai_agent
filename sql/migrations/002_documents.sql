@@ -89,18 +89,18 @@ CREATE TABLE IF NOT EXISTS document_chunks (
 ---    부서, 카테고리, 효력적용일 문서 필터 검색용 복합 인덱스
 --- ==============================================================
 create index if not exists idx_documents_filters
-on documents(department, category, effective_date)
+on documents(department, category, effective_date);
 
 --- ==============================================================
 --- 4. chunk 메타 정보 검색용 인덱스
 ---    jsonb 타입의 컬럼 내부 값, 키 등을 빠르게 검색하기 위해 gin 인덱스 사용
 --- ==============================================================
 create index if not exists idx_chunks_metadata
-on document_chunks using gin(metadata)
+on document_chunks using gin(metadata);
 
 --- ==============================================================
 --- 5. 임베딩 벡터 유사도 검색용 인덱스
 ---    코사인 거리 유사도 기반 벡터 검색 시 사용할 수 있도록 hnsw 인덱스 반영
 --- ==============================================================
 create index if not exists idx_chunks_hnsw
-on document_chunks using hnsw(embedding vector_cosine_ops)
+on document_chunks using hnsw(embedding vector_cosine_ops);
