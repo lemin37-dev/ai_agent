@@ -4,7 +4,7 @@
 - LangGraph에 agent, tools 등을 등록, 순서 지정, 사용가능한 형태로 빌드
 '''
 # 필요 모듈 획득
-from langchain_core.messages import SystemMessage # Agent 구성 시 System 프롬프트에 해당
+from langchain_core.messages import SystemMessage, HumanMessage # Agent 구성 시 System 프롬프트에 해당
 from langgraph.graph import StateGraph, START, END # LangGraph의 구성요소
 from langgraph.prebuilt import ToolNode, tools_condition # Tool 실행, 호출여부 판단
 from app.llm import get_chat_model # LLM 모델
@@ -50,8 +50,43 @@ def build_graph():
 
   # Agent 최종 응답을 JSON으로 구조화하는 노드
   async def format_output(state:AgentState):
+    # 최종답변
+    answer = state['messages'][-1].content 
+    # 사용자 도구명
+    tool_names = [
+      getattr(m, "name", "")
+      for m in state['messages']
+      if getattr(m, "type", "")=="tool"
+    ]
 
-    response = await model.ainvoke()
+    response = await model.ainvoke([
+      HumanMessage(content=f"""
+        다음 답변을 JSON으로 구조화하세요.
+                반드시 JSON만 출력하세요.
+
+                형식:
+                {{
+                "answer": "최종 답변",
+                "sources": ["근거 또는 출처"],
+                "tools_used": ["사용한 도구"],
+                "confidence": 0.0
+                }}
+
+                답변:
+                {answer}
+
+                실제 사용된 도구:
+                {tool_names}
+
+                규칙:
+                - answer에는 최종 답변을 작성합니다.
+                - sources에는 답변의 근거 또는 출처를 작성합니다.
+                - tools_used에는 실제 사용된 도구만 작성합니다.
+                - 근거가 없다면 sources는 빈 배열로 작성합니다.
+                - confidence는 0.0~1.0 사이 숫자로 작성합니다.
+                - 근거가 약하면 confidence를 낮추세요.
+      """)
+    ])
 
   # 그래프 생성
   graph = StateGraph(AgentState)  # 상태 정보를 가진 그래프 생성
