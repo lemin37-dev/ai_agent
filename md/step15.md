@@ -8,6 +8,9 @@
     - 국내
       - https://playmcp.kakao.com/
     - 서비스 주체별 MCP 제공
+  - 사용
+    - 이미 구성된 MCP 사용 -> 서비스 업체(노션, 슬랙 등에서 개방된 규격을 사용하면 본인 앱에서 연동가능)
+    - playmcp 등 사이트는 사용의 제한이 존재(클로드, openai 등 특정 회사를 거쳐 사용 가능)
   - 장점
     - Agent <-> MCP 표준화 <-> 서비스
       - 누구나 MCP 규격을 준수하면 어떠한 LLM/Agent도 호환가능하게 됨
@@ -41,6 +44,13 @@ L mcp_servers
 L app
     L tools
         L mcp_tools.py      : MCP Client 역할, LangGraph 상 도구로 등록
+    L agent
+        L graph.py          : MCP 도구 등록
 L steps
     L step15_mcp.py         : MCP 테스트용, MCP Host 포지션
+```
+
+# 실행
+```
+python -m steps.step15_mcp
 ```
