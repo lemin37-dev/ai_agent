@@ -110,16 +110,6 @@ def build_graph():
   # 시작점 
   graph.add_edge(START, "agent")
   # 조건부 실행 (Agent가 툴이 필요한 경우 or 아닐 경우 END로 이동 -> 추론을 통해 판단)
-  '''
-             tools_condition
-                   │
-          ┌────────┴────────┐
-          ↓                 ↓
-      "tools"              END       <- tools_condition 함수의 반환값
-          │                 │
-          ↓                 ↓
-     tools 노드            END (종료) <- 이동할 노드
-  '''
   graph.add_conditional_edges("agent", route_after_agent, {"tools":"tools", "format":"format"})
   # 툴 사용 이후 방향성 
   graph.add_edge("tools", "agent")

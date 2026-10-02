@@ -25,6 +25,7 @@ async def run(query:str):
       print("TOOL RESULT : ", message.content)
 
   # 최종 답변
+  final_res = result.get('final')
   print("+"*30)
-  print("[최종답변]\n\n", result["messages"][-1].content)
+  print("[최종답변]\n\n", final_res.model_dump_json(indent=2) if final_res else result["messages"][-1].content)
   print("+"*30)

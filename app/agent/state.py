@@ -6,7 +6,10 @@
 
 # MessagesState를 상속받은 클래스는 LangGraph의 상태관리 용으로 사용가능함
 from langgraph.graph import MessagesState
+from app.output import AgentResponse
 
 class AgentState(MessagesState):
   # 라운드 정보만 우선 구성
   rounds:int
+  # 최종 구조화된 응답
+  final:AgentResponse | None
