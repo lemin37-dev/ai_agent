@@ -52,5 +52,15 @@ aws configure get region
 aws configure set region us-east-1
 ```
 
+# 본 프로젝트 남은 내용
+- Agent-Loop
+  - Agent 사용 > 결과를 검증, 재시도 루프
 
+- 하네스 엔지니어링
+  - Agent 실행에 대한 정책 계층 구성
+    - Tool 사용, 실행 버짓, 프롬프트 인젝션 방어, 테스트 코드 분리 등
+    - LLM의 성능, 권한, 예산, 실패 등 경계를 명확하게 구성
 
+- 클라우드 서비스 반영
+  - 테라폼을 통한 인프라구성, postgresql -> RDS
+  - 로컬에서 구성한 서비스를 클라우드로 마이그레이션 진행
