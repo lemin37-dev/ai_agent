@@ -15,8 +15,17 @@ from app.tools.rag_tools import search_company_policy # LAG Tool
 from app.tools.memory_tools import remember_user_prefrence, recall_user_memory # Memroy Tool
 from app.tools.mcp_tools import get_exchange_rate # MCP Tool
 
+# 최종 응답의 출력형식을 정의한 pydantic 모델
+from app.output import AgentResponse
+
 # 툴 목록 구성
 TOOLS = [sales_summary, top_products, refund_summary, search_company_policy, remember_user_prefrence, recall_user_memory, get_exchange_rate]
+
+# 노드 분기 함수
+def route_after_agent(state:AgentState):
+  # 툴 호출이 있다면 툴 노드로 이동, 없으면 최종 출력 포맷으로 이동
+  return "tools" if getattr(state['messages'][-1], "tool_calls", None) else "format"
+
 
 # 그래프 빌드
 def build_graph():
@@ -39,6 +48,11 @@ def build_graph():
     # 추론 결과, 라운드(LLM 1회 호출) + 1 반환 -> state['messages']에 기록 -> 상태 관리
     return {"messages":[response], "rounds": rounds+1}
 
+  # Agent 최종 응답을 JSON으로 구조화하는 노드
+  async def format_output(state:AgentState):
+
+    response = await model.ainvoke()
+
   # 그래프 생성
   graph = StateGraph(AgentState)  # 상태 정보를 가진 그래프 생성
 
@@ -46,6 +60,8 @@ def build_graph():
   graph.add_node("agent", call_model)
   # handle_tool_errors : 툴 실행 중에 에러 발생 시 에이전트 전체를 바로 실패시키지 않고 오류를 처리하여 Agent가 대응하게 할 것인지 여부
   graph.add_node("tools", ToolNode(TOOLS, handle_tool_errors=True))
+  # 출력 포맷 처리
+  graph.add_node("format", format_output)
 
   # 흐름 구성
   # add_edge("A", "B") : A -> B
@@ -62,9 +78,11 @@ def build_graph():
           ↓                 ↓
      tools 노드            END (종료) <- 이동할 노드
   '''
-  graph.add_conditional_edges("agent", tools_condition, {"tools":"tools", END:END})
+  graph.add_conditional_edges("agent", route_after_agent, {"tools":"tools", END:END})
   # 툴 사용 이후 방향성 
   graph.add_edge("tools", "agent")
+  # 포맷 노드 이후 방향성
+  graph.add_edge("format", END)
 
   # 그래프 컴파일 및 반환
   return graph.compile()
