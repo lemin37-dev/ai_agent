@@ -15,3 +15,8 @@ L app
     L agent
         L graph : output.py에서 만든 모델을 출력에 적용
 ```
+
+# 실행
+```
+python -m steps.step16_structured_output
+```

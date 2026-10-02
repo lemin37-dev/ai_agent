@@ -88,6 +88,13 @@ def build_graph():
       """)
     ])
 
+    # 읍답처리
+    content = response.content.strip()
+    content = content.removeprefix("```json").removesuffix("```").strip()
+    final_res = AgentResponse.model_validate_json(content)
+
+    return {"final": final_res}
+
   # 그래프 생성
   graph = StateGraph(AgentState)  # 상태 정보를 가진 그래프 생성
 
@@ -113,7 +120,7 @@ def build_graph():
           ↓                 ↓
      tools 노드            END (종료) <- 이동할 노드
   '''
-  graph.add_conditional_edges("agent", route_after_agent, {"tools":"tools", END:END})
+  graph.add_conditional_edges("agent", route_after_agent, {"tools":"tools", "format":"format"})
   # 툴 사용 이후 방향성 
   graph.add_edge("tools", "agent")
   # 포맷 노드 이후 방향성
