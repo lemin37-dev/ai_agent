@@ -14,15 +14,16 @@ def get_exchange_rate(base:str="USD", quote:str="KRW") -> dict:
   임시용. 고정값으로 응답(실시간 환율 정보 X)
   '''
   rates = {
-    ("USD", "KRW"): 1364.30,
-    ("EUR", "KRW"): 1533.61,
-    ("JPY", "KRW"): 863.24,
+    ("USD","KRW"): 1364.30,
+    ("EUR","KRW"): 1533.61,
+    ("JPY","KRW"): 863.24,
   }
   # 키 구성
-  key = (base.upper(), quote.upper())
+  key = (base.upper(),quote.upper())
 
   # 미지원 통화 예외처리
-  if key in rates:
+  if not key in rates:
+    print(key)
     raise ValueError("미지원 통화")
 
   # tool의 결과 반환
