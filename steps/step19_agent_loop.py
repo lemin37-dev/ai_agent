@@ -5,7 +5,7 @@ import asyncio
 from app.loop_engine import run_agentic_loop
 
 async def main():    
-    result = await run_agentic_loop("9월 초 환불 현황과 회사 환불 정책을 함께 분석해줘.")
+    result = await run_agentic_loop("2026년 9월 초 환불 현황과 회사 환불 정책을 함께 분석해줘.")
     print( result )
 
 asyncio.run(

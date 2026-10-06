@@ -35,7 +35,41 @@ async def run_agentic_loop(task:str, max_attempts:int=2):
         plan = await planner.ainvoke(f'업무 질문을 검증 가능한 하위 질문 1~4개로 분해하세요. task={task}\nfeedback={feedback}')
         print(f'\n +++ ATTEMPT {attempt} +++')
         print("[PLAN]" if attempt == 1 else "[REPLAN]")
+
+		# 3-2-2. EXECUTE -> 서브 질문별로 진행
+        answers = []
         for i,q in enumerate(plan.subquestions, 1):
-            print(f"Q{i} : {q}")
+            result = await build_graph().ainvoke({
+				"messages":[("user", q)], 
+                "rounds":0, 
+                "final":None
+                }, config={"recursion_limit":18})
+            # 답변 체크
+            final = result.get("final")
+            # 구조화 실패처리
+            answer = final.answer if final else result['messages'][-1].content
+            # 대답모음
+            answers.append(answer)
+            print(f"Q{i} 실행완료")
+
+        # 답변을 하나의 말뭉치로 구성
+        final_answer = "\n".join(f"Q{i+1}: {q}\nA{i+1}: {a}" for i, (q, a) in enumerate(zip(plan.subquestions, answers)))
+
+        # 3-2-3. Verify
+        ver_dict = await verifier.ainvoke(f"원래 업무를 답하기에 충분한지 검증하세요. task={task}\n{final_answer}")
+        print(f"\n[VERIFY] passed={ver_dict.passed}")
+
+        # pass 여부에 따른 반환처리
+        if ver_dict.passed:
+            return final_answer
+
+        # feedback 구성
+        feedback = "; ".join(ver_dict.gaps)
+        print("[FEEDBACK]")
+        for gap in ver_dict.gaps:
+            print(f"- {gap}")
+
+    # 최종응답 (최대 2회까지 반복하고 이후는 무조건 반환)
+    return final_answer
 
 
