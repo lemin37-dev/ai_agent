@@ -31,3 +31,11 @@ L infra
 ```
 python -m steps.step21_agent_service
 ```
+
+# Agent 컨테이너화
+- Dockerfile 구성하여 이미지 생성
+  - Fastapi + LangGraph 등
+
+# Docker Compose
+- 서비스
+  - Agent 컨테이너 추가
