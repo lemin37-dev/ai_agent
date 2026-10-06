@@ -39,3 +39,10 @@ class Budget:
       raise RuntimeError("툴 사용 제한 횟수 초과.")
     if time.monotonic() - self.started > self.limits.max_seconds:
       raise RuntimeError("실제 실행 시간 제한 초과.")
+
+
+# 요청한 툴이 허용한 툴 목록에 존재하는 지 확인
+def assert_allowed_tool(name:str):
+  # 에이전트 별로 제한적인 툴 범위 구성 가능
+  if name not in ALLOWED_TOOLS:
+    raise PermissionError(f"해당 툴 사용은 허용되지 않았습니다. {name}")
