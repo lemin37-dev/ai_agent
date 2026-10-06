@@ -5,6 +5,17 @@ LangGraph 기반 Agent 실행하는 코드
 import asyncio
 from app.agent.graph import build_graph
 
+# 테스트용/Fastapi/Slack 등 공용
+graph = build_graph()
+
+# 에이전트 실행 함수
+async def invoke_agent(question:str):
+  return await graph.ainvoke(
+    {"messages": [("user", question)], "rounds": 0, "final":None, "tool_rounds":0},
+    # 최대 순환 횟수 제한
+    config = {"recursion_limit": 18}
+  )
+
 async def run(query:str):
   '''
   사용자 질문 -> LangGraph 기반 Agent 전달
