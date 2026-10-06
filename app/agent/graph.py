@@ -42,7 +42,7 @@ def build_graph():
     start_at = state.get("start_at", 0) or time.monotonic()
     budget = Budget(
         tool_rounds = state.get('tool_rounds', 0),
-        start_at    = state['start_at']
+        start_at    = start_at
     )
     # 체크
     budget.check()

@@ -37,6 +37,7 @@ class Budget:
   def consume_tool_rounds(self):
     # 툴 사용 -> 라운드 1회 증가
     self.tool_rounds += 1
+    print('consume_tool_round 호출, 라운드 증가', self.tool_rounds)
     # 체크
     self.check()
 
@@ -47,7 +48,7 @@ class Budget:
       raise RuntimeError("툴 사용 제한 횟수 초과.")
     if time.monotonic() - self.started > self.limits.max_seconds:
       raise RuntimeError("실제 실행 시간 제한 초과.")
-    print('하네스 체크 통과 (툴 실행 횟수, 툴 수행시간)')
+    print('하네스 체크 통과 (툴 실행 횟수, 툴 수행시간)', (time.monotonic() - self.started))
 
   
 

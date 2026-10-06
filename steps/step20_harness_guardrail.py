@@ -3,9 +3,13 @@
 '''
 
 # 기능 확인
-from app.harness import ALLOWED_TOOLS, Budget, assert_allowed_tool
+from app.main import run
+import asyncio
 
-# Budget 생성
-b = Budget()
-b.consume_tool_rounds()
-print("Round, Time 체크")
+async def main():    
+    result = await run("2026년 9월 매출 요약해줘.")
+    print(result)
+
+asyncio.run(
+   main()
+)
