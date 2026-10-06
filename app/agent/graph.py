@@ -14,6 +14,8 @@ from app.tools.sql_tools import sales_summary, top_products, refund_summary # SQ
 from app.tools.rag_tools import search_company_policy # LAG Tool
 from app.tools.memory_tools import remember_user_prefrence, recall_user_memory # Memroy Tool
 from app.tools.mcp_tools import get_exchange_rate # MCP Tool
+from app.harness import ALLOWED_TOOLS, Budget, assert_allowed_tool # Harness
+import time
 
 # 최종 응답의 출력형식을 정의한 pydantic 모델
 from app.output import AgentResponse
@@ -36,6 +38,15 @@ def build_graph():
 
   # Agent 노드 -> 추론 or 도구+추론
   async def call_model(state:AgentState):
+    # 하네스 반영
+    start_at = state.get("start_at", 0) or time.monotonic()
+    budget = Budget(
+        tool_rounds = state.get('tool_rounds', 0),
+        start_at    = state['start_at']
+    )
+    # 체크
+    budget.check()
+    
     # 라운드 값 획득 (LangGraph 내에서 순환 횟수 -> 추론 횟수)
     rounds = state.get('rounds', 0)
     # 라운드를 기점으로 모델을 선택 -> 6회 미만일 때만 도구를 사용한 추론
@@ -46,7 +57,7 @@ def build_graph():
       [SystemMessage(content=SYSTEM_PROMPT), *state['messages']]
     )
     # 추론 결과, 라운드(LLM 1회 호출) + 1 반환 -> state['messages']에 기록 -> 상태 관리
-    return {"messages":[response], "rounds": rounds+1}
+    return {"messages":[response], "rounds": rounds+1, "start_at": start_at}
 
   # Agent 최종 응답을 JSON으로 구조화하는 노드
   async def format_output(state:AgentState):
@@ -95,11 +106,34 @@ def build_graph():
 
     return {"final": final_res}
 
+  # Harness 노드 구성
+  async def check_harness(state:AgentState):
+    # 실행횟수 제한
+    budget = Budget(
+      tool_rounds = state.get('tool_rounds', 0),
+      start_at    = state['start_at']
+    )
+
+    # 제한사항 체크
+    budget.consume_tool_rounds()
+
+    # Tool 허용 범위 체크
+    tool_calls = getattr(state["messages"][-1], "tool_calls", [])
+    for call in tool_calls:
+      assert_allowed_tool(call['name'])
+
+    # state 기록
+    return {
+      "tool_rounds": budget.tool_rounds
+    }
+
   # 그래프 생성
   graph = StateGraph(AgentState)  # 상태 정보를 가진 그래프 생성
 
   # 노드 등록 (LLM 추론, 도구)
   graph.add_node("agent", call_model)
+  # 하네스 노드 등록
+  graph.add_node("harness", check_harness)
   # handle_tool_errors : 툴 실행 중에 에러 발생 시 에이전트 전체를 바로 실패시키지 않고 오류를 처리하여 Agent가 대응하게 할 것인지 여부
   graph.add_node("tools", ToolNode(TOOLS, handle_tool_errors=True))
   # 출력 포맷 처리
@@ -110,7 +144,9 @@ def build_graph():
   # 시작점 
   graph.add_edge(START, "agent")
   # 조건부 실행 (Agent가 툴이 필요한 경우 or 아닐 경우 END로 이동 -> 추론을 통해 판단)
-  graph.add_conditional_edges("agent", route_after_agent, {"tools":"tools", "format":"format"})
+  graph.add_conditional_edges("agent", route_after_agent, {"tools":"harness", "format":"format"})
+  # 하네스 사용 이후 방향성
+  graph.add_edge("harness", "tools")
   # 툴 사용 이후 방향성 
   graph.add_edge("tools", "agent")
   # 포맷 노드 이후 방향성

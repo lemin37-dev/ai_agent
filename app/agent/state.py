@@ -13,3 +13,6 @@ class AgentState(MessagesState):
   rounds:int
   # 최종 구조화된 응답
   final:AgentResponse | None
+  # 하네스 용 추가
+  tool_rounds:int   # 툴 실행 라운드 횟수
+  start_at:float    # 수행시간 측정을 위한 시작 시간 세팅
